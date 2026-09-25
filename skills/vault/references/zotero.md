@@ -26,6 +26,8 @@ Proje sayfasının frontmatter'ında `zotero-etiket: <etiket>` durur (ör. `dent
    - frontmatter'a `içerik: özet` yaz (tam metin okunduysa `içerik: tam-metin`),
    - başlığın altına şu callout'u koy ve özette olmayan sayı, yöntem ya da sonuç yazma:
      `> [!note] Özete dayalı` / `> Tam metin Zotero'da yok; bu not yalnızca özete dayanıyor.`
+   - Kullanıcıya PDF'i Zotero'ya ekleyip notu tam metinle güncelletebileceğini söyle. Güncellerken `içerik: tam-metin` yap, callout'u kaldır ve özetten gelen sayıları tam metinle doğrula.
+   - Birçok kayıt için PDF durumunu öğrenmek istenirse `zotero_item_fulltext`'i toplu çağırma: PDF olan her kayıt makalenin tamamını döndürür. Tek bir kayıtta dene; sonuç "No suitable attachment" ise kütüphanede ek olup olmadığını kullanıcıya sor.
 3. **Ad:** `<İlk yazarın soyadı> <yıl> - <kısa Türkçe başlık>.md`. Yıl Zotero'daki tarihten alınır. Ad vault'ta benzersiz olmalı.
 4. **Şüpheli metadata:** Yazar adında bariz yazım hatası (ör. `Lovelh` → `Lovell`) ya da Zotero yılı ile derginin basılı yılı arasında fark görürsen, notta doğrusunu kullan ve kullanıcıya Zotero'da düzeltmesini öner. Zotero'yu değiştirme.
 5. **Yaz:** Aşağıdaki şablonla projenin `Literatür/` klasörüne. İlgili kavram sayfalarına ve öteki literatür notlarına wikilink ver.
