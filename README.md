@@ -76,6 +76,12 @@ Ayrıntılar: [`skills/vault/references/zotero.md`](skills/vault/references/zote
 python3 -m unittest discover tests
 ```
 
+Skill davranışı için eval'ler `evals/` altında: kurgusal bir test vault'u (`fixture-vault/`), 5 senaryo (`evals.json`: Inbox işleme, ad çakışması, kaydetme, notlara dayalı cevap, bakım) ve dosya sistemine bakarak puanlayan `grade.py`. Senaryolar Anthropic'in `skill-creator` skill'iyle, skill'li ve skill'siz olarak çalıştırılır; her koşu vault'un kendi kopyasında çalışır. Sonuçlar `vault-workspace/` altına yazılır (repoda yok). Puanlama:
+
+```bash
+python3 evals/grade.py vault-workspace/iteration-1
+```
+
 ## Önerilen
 
 Not sözdizimi, canvas ve Bases için [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) (`obsidian-markdown`, `json-canvas`, `obsidian-bases`). Zorunlu değil; skill bunlar olmadan da çalışır.

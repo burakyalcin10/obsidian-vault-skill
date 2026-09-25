@@ -1,0 +1,73 @@
+{
+  "skill_name": "vault",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ingest-inbox-kaynak",
+      "prompt": "Inbox'taki Soğuk Demleme.txt dosyasını işle, Kavurma Profili projesiyle ilgili.",
+      "expected_output": "Proje klasöründe özet sayfası; kavram sayfası (proje: alanı yok, 'Kavurma Profili projesinde' bölümü); kategori sayfası güncel; kaynak Inbox/İşlendi/'de; linkler klasörsüz; proje log'u güncel.",
+      "assertions": [
+        "Kaynak Inbox/İşlendi/ altına taşınmış, Inbox kökünde kalmamış",
+        "Kaynak içeriği kaybolmamış (İşlendi/'deki dosya orijinalle aynı)",
+        "Projeler/Kavurma Profili/ altında yeni bir özet sayfası var ve proje: alanı taşıyor",
+        "Hiçbir notta [[Inbox/ ile başlayan link yok (kaynak linkleri klasörsüz)",
+        "Yeni bir kavram sayfası açıldıysa proje: alanı taşımıyor ve bir kategori sayfasında listeleniyor",
+        "Proje log'una bugünün tarihli yeni satır eklenmiş",
+        "Proje sayfası yeni özet sayfasına link veriyor",
+        "Kök log.md'ye proje işlemi kopyalanmamış",
+        "Bakım script'i yeni kırık link bulmuyor (başlangıçta 1 vardı)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ingest-ad-cakismasi",
+      "prompt": "Inbox'taki sunum.txt'yi işle, Kavurma Profili projesine ait.",
+      "expected_output": "Vault'ta aynı adlı dosya olduğu için kaynak tarih önekiyle yeniden adlandırılır; hiçbir dosyanın üzerine yazılmaz.",
+      "assertions": [
+        "Projeler/Kavurma Profili/sunum.txt orijinal içeriğiyle duruyor",
+        "Inbox'taki sunumun içeriği vault'ta hâlâ var (kaybolmamış)",
+        "İşlenen kaynak tarih önekli bir adla (YYYY-MM-DD sunum.txt) İşlendi/'de",
+        "Notlardaki kaynak linki yeni adı kullanıyor (çıplak [[sunum.txt]] yok)",
+        "Inbox kökünde sunum.txt kalmamış"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "kaydet-kavram-ve-proje",
+      "prompt": "Şunu vault'a kaydet: Kavurma Profili projesinde first crack'i şarj sonrası yaklaşık 8. dakikada ve 196°C civarında duyuyoruz. Genel olarak first crack, çekirdekteki suyun buharlaşıp basınç oluşturarak hücre yapısını çatlatmasıyla oluşan sesli bir olaydır ve açık kavurma evresinin başladığını gösterir.",
+      "expected_output": "Kavramlar/ altında First Crack sayfası: genel bilgi, proje: alanı yok, 196°C bilgisi 'Kavurma Profili projesinde' bölümünde; kategori sayfasında listelenmiş; proje log'u güncel.",
+      "assertions": [
+        "Kavramlar/ altında first crack için bir kavram sayfası var",
+        "Kavram sayfası proje: alanı ya da proje/ etiketi taşımıyor",
+        "Projeye özel 196°C bilgisi 'Kavurma Profili projesinde' başlığının altında, genel bölümde değil",
+        "Kavram bir kategori sayfasında listeleniyor",
+        "Proje log'una yeni satır eklenmiş"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "sor-notlara-dayali",
+      "prompt": "Notlarıma göre Maillard reaksiyonu hangi sıcaklık aralığında belirginleşiyor ve Yirgacheffe profilinde development time ne kadardı?",
+      "expected_output": "Maillard için 140–165°C, [[Maillard Reaksiyonu]] atfıyla; development time notlarda olmadığını açıkça söyler; hiçbir dosyayı değiştirmez.",
+      "assertions": [
+        "Cevap 140–165°C aralığını veriyor",
+        "Cevap [[Maillard Reaksiyonu]] ya da ilgili sayfaya wikilink atfı içeriyor",
+        "Cevap development time bilgisinin notlarda olmadığını açıkça söylüyor (uydurmuyor)",
+        "Vault'ta hiçbir dosya değişmemiş"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "bakim-raporu",
+      "prompt": "vault'u kontrol et",
+      "expected_output": "Bakım script'i çalışır; kırık link, aynı ad, kategorisiz kavram, Inbox bekleyenleri raporlanır; onay almadan hiçbir şey düzeltilmez.",
+      "assertions": [
+        "Rapor günlük notundaki kırık linki ([[Kavurucu Kurulum Notları]]) belirtiyor",
+        "Rapor iki sunum.txt dosyasının aynı adı taşıdığını belirtiyor",
+        "Rapor Asitlik kavramının kategorisiz olduğunu belirtiyor",
+        "Rapor Inbox'ta bekleyen 2 dosyayı belirtiyor",
+        "Vault'ta hiçbir dosya değişmemiş (onaysız düzeltme yok)"
+      ]
+    }
+  ]
+}

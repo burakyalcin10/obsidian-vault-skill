@@ -1,0 +1,3 @@
+Kavurma Profili ara sunumu (proje ekibi, 2026-09-15)
+- 3 çekirdek denendi, Yirgacheffe en tutarlı sonuç verdi.
+- Bir sonraki adım: sıcaklık sensörünün kalibrasyonu.
