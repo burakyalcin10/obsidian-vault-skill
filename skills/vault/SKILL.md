@@ -23,16 +23,20 @@ Not sözdizimi için `obsidian-markdown` skill'ine, görsel harita için `json-c
 
 ```
 <Vault>/
-├── index.md                      ← vault girişi: proje tablosu + kavram listesi. Her sorguda ilk bunu oku
+├── index.md                      ← vault girişi: proje tablosu + kategori listesi. Her sorguda ilk bunu oku
 ├── log.md                        ← SADECE vault düzeyi işlemler (kurulum, yapı değişikliği, yeni proje açılışı)
 ├── Vault Kullanımı.md            ← kullanıcı rehberi
-├── Inbox/                        ← işlenecek ham kaynaklar
+├── Inbox/                        ← işlenecek ham kaynaklar (kökte duran = bekleyen)
+│   └── İşlendi/                  ← işlenmiş kaynaklar buraya taşınır
 ├── Kavramlar/                    ← ortak kavram sayfaları, tek kopya, projesiz
+│   └── Kategoriler/              ← kategori sayfaları: kavram listesi + birer satır özet
 └── Projeler/<Ad>/
     ├── <Ad> Projesi.md           ← projenin merkezi ve içerik listesi
     ├── <Ad> Log.md               ← bu projedeki işlemler
     └── (alt klasörler: Literatür/, Toplantılar/, Kararlar/ … gerektikçe)
 ```
+
+**Index küçük kalır.** `index.md`'de kavram listelenmez; sadece proje tablosu ve kategori sayfalarına linkler (kategori başına bir satır: ne içerdiği, kaç kavram) durur. Kavramlar kendi kategori sayfasında listelenir: `Kavramlar/Kategoriler/<Kategori> Kavramları.md`, her kavram için `- [[Kavram]] — tek satır özet`. Böylece bir sorgu index + tek kategori sayfası okur; kavram sayısı arttıkça maliyet sabit kalır. Bir kategori ~30 kavramı geçerse alt kategorilere böl. Her kavram tam olarak bir kategori sayfasında listelenir.
 
 Yukarıdakiler dışındaki kök klasörler ve dosyalar kullanıcının kendi notlarıdır. Onları oku ve link ver, ama **izin almadan taşıma, yeniden adlandırma, silme veya düzenleme yapma**.
 
@@ -59,7 +63,7 @@ tags: [konu, alt-konu]            # projeye özel sayfalarda + proje/<kısa-ad>
 proje: "[[<Ad> Projesi]]"         # SADECE projeye özel sayfalarda
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
-sources: ["[[Inbox/dosya.pdf]]", "https://..."]
+sources: ["[[dosya.pdf]]", "https://..."]
 ---
 # Başlık
 
@@ -72,28 +76,30 @@ Kısa özet (2-3 cümle).
 ...
 
 ## Kaynaklar
-- [[Inbox/dosya.pdf]] — hangi bilgi nereden
+- [[dosya.pdf]] — hangi bilgi nereden
 ```
+
+- Kaynak linklerine klasör yazma: `[[Inbox/dosya.pdf]]` değil `[[dosya.pdf]]`. Kaynak işlenince `Inbox/İşlendi/`'ye taşınır; sadece adla yazılan link taşımadan sonra da çalışır.
 
 - Sayfalar Türkçe, dosya adları okunur başlık olsun.
 - **Dosya adları vault genelinde benzersiz olmalı.** Obsidian linkleri dosya adıyla çözer. Bu yüzden proje sayfalarına ve log'lara proje adını koy; `index.md` ve `log.md` adları sadece kökte kullanılır.
-- Bir kavram için tek sayfa olsun. Yeni sayfa açmadan önce index'te ve Grep ile var mı diye bak; varsa onu güncelle.
+- Bir kavram için tek sayfa olsun. Yeni sayfa açmadan önce ilgili kategori sayfasında ve Grep ile var mı diye bak; varsa onu güncelle. Yeni kavramı kategori sayfasına ekle; uygun kategori yoksa yenisini aç ve index'e ekle.
 - Kaynağı olmayan iddiaları `> [!warning] Kaynaksız` callout'u ile işaretle.
 
 ## İşlemler
 
-**Kaydet** ("bunu vault'a kaydet"): Konuşmadaki cevabı ya da fikri uygun sayfaya ekle veya yeni sayfa aç. Projeye özel bilgi proje klasörüne, genel bilgi kavram sayfasına gider. Transkript değil, damıtılmış bilgi yaz. Ardından proje sayfasının listesini, gerekiyorsa index'i ve ilgili log'u güncelle.
+**Kaydet** ("bunu vault'a kaydet"): Konuşmadaki cevabı ya da fikri uygun sayfaya ekle veya yeni sayfa aç. Projeye özel bilgi proje klasörüne, genel bilgi kavram sayfasına gider. Transkript değil, damıtılmış bilgi yaz. Ardından proje sayfasının listesini, yeni kavram varsa kategori sayfasını ve ilgili log'u güncelle.
 
 **İşle / ingest** ("Inbox'u işle", "bu PDF'i ekle"):
 1. Kaynağı oku.
 2. Özet sayfası oluştur: projeye aitse proje klasörüne, değilse `Kavramlar/`'a. Kavram sayfalarını oluştur ya da güncelle.
 3. Sayfaları birbirine ve kullanıcının mevcut notlarına wikilink ile bağla.
-4. İlgili log'a `işlendi: Inbox/<dosya>` satırı ekle. Kaynağı taşıma.
-5. index'i (yeni kavram ya da proje varsa) ve proje sayfasını güncelle.
+4. Kaynağı `Inbox/İşlendi/`'ye taşı (onay gerekmez; silme değil). İlgili log'a `işlendi: [[<dosya>]]` satırı ekle. Inbox'un kökünde kalan her dosya bekleyen demektir; log taramaya gerek yok.
+5. Kategori sayfalarını (yeni kavram varsa), index'i (yeni kategori ya da proje varsa) ve proje sayfasını güncelle.
 6. Kullanıcıya hangi sayfaların oluşturulduğunu veya değiştiğini listele.
 
 **Sor** ("notlarıma göre …"):
-1. `index.md`'yi oku. Projedeysen o projenin sayfasını da oku. Sonra Grep ile ara.
+1. `index.md`'yi oku, soruyla ilgili kategori sayfasını aç. Projedeysen o projenin sayfasını da oku. Sonra Grep ile ara.
 2. Sadece ilgili sayfaları oku. Tüm vault'u okuma; bu token israfı olur.
 3. Cevabı `[[sayfa]]` atıflarıyla ver.
 4. Notlarda yoksa bunu açıkça söyle. Genel bilgiyle tamamlıyorsan bunu belirt.
@@ -105,11 +111,12 @@ Kısa özet (2-3 cümle).
 python "<skill klasörü>/scripts/check.py" "<vault yolu>"
 ```
 
-Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan kavram ve projeler, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
+Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan proje ve kategoriler, hiçbir kategori sayfasında listelenmeyen kavramlar, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
 
 ## Kurallar
 - Toplu taşıma ve yeniden adlandırma için shell (bash, PowerShell, python) kullanılabilir. Vault işletim sisteminin korumalı bir klasöründeyse (ör. Windows'ta "Denetimli klasör erişimi") shell yazmaları engellenebilir; o zaman kullanıcıya söyle.
 - **Silmeden önce kullanıcıya listeyi göster ve onay al.** Silme geri alınamaz; vault git'te değilse tek güvence bulut servisinin ya da işletim sisteminin geri dönüşüm kutusudur.
+- Inbox'u temizlemek için işlenmiş kaynakları silme; `Inbox/İşlendi/`'ye taşı.
 - Kullanıcının kendi notlarını değiştirmeden önce sor. `Projeler/`, `Kavramlar/`, `Inbox/`, `index.md`, `log.md` ve `Vault Kullanımı.md` Claude'un alanıdır.
 - Log satırı: `- YYYY-MM-DD — işlem — etkilenen sayfalar`, en yeni üstte.
 - Vault bir bulut klasöründeyse (OneDrive, iCloud, Dropbox) okunamayan bir dosya yalnızca bulutta olabilir; kullanıcıya söyle.

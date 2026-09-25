@@ -11,6 +11,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
@@ -36,9 +37,18 @@ def in_claude_area(rel: Path) -> bool:
         "index.md", "log.md", "Vault Kullanımı.md"}
 
 
+def is_category(rel: Path) -> bool:
+    """Kavramlar/Kategoriler/ altındaki kategori sayfası mı?"""
+    return rel.parts[:2] == ("Kavramlar", "Kategoriler")
+
+
+def is_concept(rel: Path) -> bool:
+    return top_dir(rel) == "Kavramlar" and not is_category(rel)
+
+
 def is_hub(rel: Path) -> bool:
-    """index, kök log ya da bir proje log'u mu? Bunlar içerik değil, gezinti sayfası."""
-    return rel.as_posix() in HUB_NOTES or rel.name.endswith(" Log.md")
+    """index, log ya da kategori sayfası mı? Bunlar içerik değil, gezinti sayfası."""
+    return rel.as_posix() in HUB_NOTES or rel.name.endswith(" Log.md") or is_category(rel)
 
 
 # ── Yetim sayfa kuralı ───────────────────────────────────────────────────────
@@ -144,11 +154,19 @@ def check_index(v: Vault):
     if index not in v.text:
         return ["index.md yok"]
     linked = v.linked_from(index)
-    out = [f"kavram: {n.as_posix()}" for n in v.notes
-           if top_dir(n) == "Kavramlar" and n not in linked]
-    out += [f"proje: {p}" for p in v.projects()
-            if Path("Projeler", p, f"{p} Projesi.md") not in linked]
+    out = [f"proje: {p}" for p in v.projects()
+           if Path("Projeler", p, f"{p} Projesi.md") not in linked]
+    out += [f"kategori: {n.as_posix()}" for n in v.notes
+            if is_category(n) and n not in linked]
     return out
+
+
+def check_uncategorized(v: Vault):
+    listed = set()
+    for n in v.notes:
+        if is_category(n):
+            listed |= v.linked_from(n)
+    return [n.as_posix() for n in v.notes if is_concept(n) and n not in listed]
 
 
 def check_project_pages(v: Vault):
@@ -167,7 +185,7 @@ def check_project_pages(v: Vault):
 def check_concept_rules(v: Vault):
     out = []
     for n in v.notes:
-        if top_dir(n) != "Kavramlar":
+        if not is_concept(n):
             continue
         fm = v.frontmatter(n)
         if re.search(r"^proje\s*:", fm, re.M) or "proje/" in fm:
@@ -180,16 +198,17 @@ def check_orphans(v: Vault):
 
 
 def check_inbox(v: Vault):
-    logs = [n for n in v.notes if is_hub(n) and n.as_posix() != "index.md"]
-    log_text = "\n".join(v.text[l] for l in logs)
-    return [f.as_posix() for f in v.files
-            if top_dir(f) == "Inbox" and f"Inbox/{f.name}" not in log_text]
+    # İşlenen kaynak Inbox/İşlendi/'ye taşınır; geri kalan her şey bekliyor demektir.
+    # macOS dosya adlarını NFD verir; "İşlendi" karşılaştırması için NFC'ye çevir.
+    return [f.as_posix() for f in v.files if top_dir(f) == "Inbox"
+            and unicodedata.normalize("NFC", f.parts[1]) != "İşlendi"]
 
 
 CHECKS = [
     ("broken_links", "Kırık wikilink'ler", check_broken),
     ("duplicate_names", "Aynı adlı notlar (link belirsizliği)", check_duplicates),
-    ("missing_from_index", "index'te olmayan kavram ve projeler", check_index),
+    ("missing_from_index", "index'te olmayan proje ve kategoriler", check_index),
+    ("uncategorized_concepts", "Hiçbir kategori sayfasında olmayan kavramlar", check_uncategorized),
     ("unlisted_project_files", "Proje sayfasında listelenmeyen dosyalar", check_project_pages),
     ("concepts_with_project", "`proje:` alanı taşıyan kavram sayfaları", check_concept_rules),
     ("orphans", "Yetim sayfalar", check_orphans),
