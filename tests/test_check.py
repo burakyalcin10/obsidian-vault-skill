@@ -79,6 +79,13 @@ class VaultTest(unittest.TestCase):
         self.write("Kavramlar/K.md")
         self.assertEqual(self.run_checks()["category_listing"], ["kategorisiz: Kavramlar/K.md"])
 
+    def test_duplicate_zotero_key(self):
+        self.write("Projeler/X/Literatür/Stansbury 2011 - A.md", "---\nzotero-key: 9W9TZM48\n---\n")
+        self.write("Projeler/X/Literatür/Stansbury 2012 - A.md", "---\nzotero-key: \"9W9TZM48\"\n---\n")
+        self.write("Projeler/X/Literatür/Musanje 2009 - B.md", "---\nzotero-key: TWC7S8K9\n---\n")
+        self.assertEqual(self.run_checks()["duplicate_zotero_keys"], [
+            "9W9TZM48: Projeler/X/Literatür/Stansbury 2011 - A.md | Projeler/X/Literatür/Stansbury 2012 - A.md"])
+
     # ── Frontmatter ──────────────────────────────────────────────────────────
 
     def test_bom_frontmatter_is_parsed(self):

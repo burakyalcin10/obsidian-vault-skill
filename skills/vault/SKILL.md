@@ -1,6 +1,6 @@
 ---
 name: vault
-description: Kullanıcının Obsidian vault'unu proje bazlı kişisel wiki olarak yönetir. Bilgi kaydetme, kaynak işleme (PDF, link, metin → bağlantılı notlar), notlarda arama ve notlara dayalı cevap verme, projeyi vault'a ekleme, vault bakımı. Use when the user says "vault'a kaydet", "notlarıma ekle", "notlarımda ara", "notlarıma göre", "bunu işle", "bu projeyi vault'a ekle", "obsidian", "wiki'ye ekle", "ders notu", or asks something that their notes may answer.
+description: Kullanıcının Obsidian vault'unu proje bazlı kişisel wiki olarak yönetir. Bilgi kaydetme, kaynak işleme (PDF, link, metin → bağlantılı notlar), notlarda arama ve notlara dayalı cevap verme, projeyi vault'a ekleme, vault bakımı. Use when the user says "vault'a kaydet", "notlarıma ekle", "notlarımda ara", "notlarıma göre", "bunu işle", "bu projeyi vault'a ekle", "obsidian", "wiki'ye ekle", "ders notu", or asks something that their notes may answer. Also for Zotero: "Zotero'dan işle", "Zotero'yu senkronla", "import from Zotero".
 ---
 
 # Vault (proje bazlı LLM-wiki)
@@ -97,6 +97,8 @@ Kısa özet (2-3 cümle).
 4. Kaynağı `Inbox/İşlendi/`'ye taşı (onay gerekmez). Asla üzerine yazma: `mv -n` kullan ve taşımadan sonra dosyanın hedefte olduğunu kontrol et; hedefte aynı ad varsa dur ve 1. adımdaki gibi yeniden adlandır. Vault'ta `[[Inbox/<dosya>]]` (ya da `](Inbox/<dosya>)`) biçiminde eski linkler varsa `[[<dosya>]]` yap; yoksa taşıma onları kırar. İlgili log'a `işlendi: [[<dosya>]]` satırı ekle. Inbox'ta `İşlendi/` dışında kalan her dosya bekleyen demektir; log taramaya gerek yok.
 5. Kategori sayfalarını (yeni kavram varsa), index'i (yeni kategori ya da proje varsa) ve proje sayfasını güncelle.
 6. Kullanıcıya hangi sayfaların oluşturulduğunu veya değiştiğini listele.
+
+**Zotero** ("bu makaleyi Zotero'dan işle", "Zotero'yu senkronla", "projedeki yeni makaleleri işle"): Önce bu skill'in klasöründeki `references/zotero.md` dosyasını oku ve oradaki akışı izle. Zotero MCP araçları (`zotero_*`) yoksa kullanıcıya söyle.
 
 **Sor** ("notlarıma göre …"):
 1. `index.md`'yi oku, soruyla ilgili kategori sayfasını aç. Projedeysen o projenin sayfasını da oku. Sonra Grep ile ara.

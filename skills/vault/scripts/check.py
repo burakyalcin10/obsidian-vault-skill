@@ -268,6 +268,16 @@ def check_concept_rules(v: Vault):
     return out
 
 
+def check_zotero_keys(v: Vault):
+    """Aynı Zotero kaydından iki not: makale iki kez işlenmiş."""
+    by_key = defaultdict(list)
+    for n in v.notes:
+        m = re.search(r"^zotero-key\s*:\s*[\"']?([A-Z0-9]{8})\b", v.frontmatter(n), re.M)
+        if m:
+            by_key[m.group(1)].append(n)
+    return [f"{k}: " + " | ".join(p.as_posix() for p in ps) for k, ps in by_key.items() if len(ps) > 1]
+
+
 def check_orphans(v: Vault):
     return [n.as_posix() for n in v.notes if is_orphan(n, v.incoming.get(n, set()))]
 
@@ -284,6 +294,7 @@ CHECKS = [
     ("category_listing", "Kategori sayfası sorunları (kavram tam bir kategoride olmalı)", check_categories),
     ("unlisted_project_files", "Proje sayfasında listelenmeyen dosyalar", check_project_pages),
     ("concepts_with_project", "`proje:` alanı taşıyan kavram sayfaları", check_concept_rules),
+    ("duplicate_zotero_keys", "Aynı Zotero kaydından birden fazla not", check_zotero_keys),
     ("orphans", "Yetim sayfalar", check_orphans),
     ("inbox_pending", "Inbox'ta bekleyenler", check_inbox),
 ]

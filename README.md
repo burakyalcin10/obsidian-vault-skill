@@ -16,6 +16,7 @@ Fikir, Andrej Karpathy'nin [LLM Wiki](https://gist.github.com/karpathy/442a6bf55
 | "Inbox'u işle", "bu PDF'i ekle" | Özet sayfası + kavram sayfaları oluşur, wikilink'lerle bağlanır |
 | "notlarıma göre …" | `index.md` → kategori sayfası → ilgili sayfalar okunur, cevap `[[sayfa]]` atıflarıyla gelir |
 | "bu projeyi vault'a ekle" | `Projeler/<Ad>/` klasörü, proje sayfası ve log açılır |
+| "Zotero'yu senkronla" | Projenin Zotero etiketindeki makalelerden notu olmayanlar literatür notuna çevrilir (isteğe bağlı, aşağıya bak) |
 | "vault'u kontrol et" | `scripts/check.py` çalışır: kırık link, çakışan dosya adı, yetim sayfa, kategorisiz kavram, bekleyen Inbox raporu |
 
 ## Vault yapısı
@@ -56,6 +57,16 @@ Bir projede farklı bir vault kullanmak için aynı satırı o projenin `CLAUDE.
 Vault boşsa ya da kökte `index.md` yoksa Claude yapıyı ilk kullanımda kurar.
 
 Bakım script'i için Python 3.8+ gerekir (ek paket yok).
+
+## Zotero (isteğe bağlı)
+
+Bir Zotero MCP sunucusu kuruluysa (ör. [`zotero-mcp`](https://pypi.org/project/zotero-mcp/)) skill makaleleri doğrudan Zotero'dan işler:
+
+- Proje sayfasına `zotero-etiket: <etiket>` yaz; projenin makaleleri Zotero'da bu etiketi taşıyanlardır.
+- "Zotero'yu senkronla" dediğinde yalnızca notu olmayan makaleler işlenir. Eşleştirme not adıyla değil Zotero item key'iyle (`zotero-key`) yapılır.
+- Zotero'da PDF yoksa not yalnızca özete dayanır ve `içerik: özet` ile işaretlenir.
+
+Ayrıntılar: [`skills/vault/references/zotero.md`](skills/vault/references/zotero.md). Zotero kurulu değilse bu dosya hiç okunmaz.
 
 ## Geliştirme
 
