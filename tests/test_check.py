@@ -53,6 +53,32 @@ class VaultTest(unittest.TestCase):
         self.write(unicodedata.normalize("NFD", "Inbox/İşlendi/eski.pdf"))
         self.assertEqual(self.run_checks()["inbox_pending"], [])
 
+    def test_turkish_dotted_capital_matches_obsidian(self):
+        """Obsidian düz toLowerCase kullanır: İşlem.md'ye [[işlem]] çözülmez, [[İşlem]] çözülür."""
+        self.write("Kavramlar/İşlem.md")
+        self.write("Projeler/X/X Projesi.md", "[[İşlem]] [[İŞLEM]] [[işlem]]")
+        broken = self.run_checks()["broken_links"]
+        self.assertEqual(broken, ["Projeler/X/X Projesi.md → [[işlem]]"])
+
+    # ── Aynı ad ve kategoriler ───────────────────────────────────────────────
+
+    def test_duplicate_attachment_names(self):
+        self.write("Inbox/İşlendi/slides.pdf")
+        self.write("Projeler/B/slides.pdf")
+        self.assertEqual(self.run_checks()["duplicate_names"],
+                         ["Inbox/İşlendi/slides.pdf | Projeler/B/slides.pdf"])
+
+    def test_concept_in_two_categories(self):
+        self.write("Kavramlar/K.md")
+        self.write("Kavramlar/Kategoriler/A Kavramları.md", "- [[K]]")
+        self.write("Kavramlar/Kategoriler/B Kavramları.md", "- [[K]]")
+        self.assertEqual(self.run_checks()["category_listing"],
+                         ["birden fazla kategoride: Kavramlar/K.md (A Kavramları, B Kavramları)"])
+
+    def test_uncategorized_concept(self):
+        self.write("Kavramlar/K.md")
+        self.assertEqual(self.run_checks()["category_listing"], ["kategorisiz: Kavramlar/K.md"])
+
     # ── Frontmatter ──────────────────────────────────────────────────────────
 
     def test_bom_frontmatter_is_parsed(self):

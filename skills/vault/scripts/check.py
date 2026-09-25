@@ -120,7 +120,8 @@ class Vault:
         self.files = sorted(self.real)
         self.notes = [f for f in self.files if f.suffix == ".md"]
 
-        # Obsidian linkleri dosya adıyla ve büyük/küçük harf duyarsız çözer
+        # Obsidian linkleri dosya adıyla ve büyük/küçük harf duyarsız çözer. Anahtar, Obsidian'daki
+        # gibi düz toLowerCase ile üretilir (locale yok): "İşlem" → "i̇şlem", yani [[işlem]] çözülmez.
         self.by_stem = defaultdict(list)   # "chunking" → [Kavramlar/Chunking.md]
         self.by_name = defaultdict(list)   # "er_diagram.png" → [ER_diagram.png]
         self.by_path = {}                  # "kavramlar/chunking.md" → Kavramlar/Chunking.md
@@ -206,8 +207,10 @@ def check_broken(v: Vault):
 
 
 def check_duplicates(v: Vault):
-    return [" | ".join(p.as_posix() for p in paths)
-            for paths in v.by_stem.values() if len(paths) > 1]
+    # Notlar uzantısız ([[Not]]), ekler tam adla ([[slides.pdf]]) çözülür; ikisinde de çakışma belirsizlik yaratır
+    groups = [paths for paths in v.by_stem.values() if len(paths) > 1]
+    groups += [paths for paths in v.by_name.values() if len(paths) > 1 and paths[0].suffix != ".md"]
+    return [" | ".join(p.as_posix() for p in paths) for paths in groups]
 
 
 def check_index(v: Vault):
@@ -222,12 +225,23 @@ def check_index(v: Vault):
     return out
 
 
-def check_uncategorized(v: Vault):
-    listed = set()
+def check_categories(v: Vault):
+    """Her kavram tam olarak bir kategori sayfasında listelenmeli."""
+    listed_in = defaultdict(list)
     for n in v.notes:
         if is_category(n):
-            listed |= v.linked_from(n)
-    return [n.as_posix() for n in v.notes if is_concept(n) and n not in listed]
+            for t in v.linked_from(n):
+                listed_in[t].append(n)
+    out = []
+    for n in v.notes:
+        if not is_concept(n):
+            continue
+        cats = listed_in.get(n, [])
+        if not cats:
+            out.append(f"kategorisiz: {n.as_posix()}")
+        elif len(cats) > 1:
+            out.append(f"birden fazla kategoride: {n.as_posix()} ({', '.join(c.stem for c in cats)})")
+    return out
 
 
 def check_project_pages(v: Vault):
@@ -265,9 +279,9 @@ def check_inbox(v: Vault):
 
 CHECKS = [
     ("broken_links", "Kırık linkler", check_broken),
-    ("duplicate_names", "Aynı adlı notlar (link belirsizliği)", check_duplicates),
+    ("duplicate_names", "Aynı adlı notlar ve ekler (link belirsizliği)", check_duplicates),
     ("missing_from_index", "index'te olmayan proje ve kategoriler", check_index),
-    ("uncategorized_concepts", "Hiçbir kategori sayfasında olmayan kavramlar", check_uncategorized),
+    ("category_listing", "Kategori sayfası sorunları (kavram tam bir kategoride olmalı)", check_categories),
     ("unlisted_project_files", "Proje sayfasında listelenmeyen dosyalar", check_project_pages),
     ("concepts_with_project", "`proje:` alanı taşıyan kavram sayfaları", check_concept_rules),
     ("orphans", "Yetim sayfalar", check_orphans),

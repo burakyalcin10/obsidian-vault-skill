@@ -91,10 +91,10 @@ Kısa özet (2-3 cümle).
 **Kaydet** ("bunu vault'a kaydet"): Konuşmadaki cevabı ya da fikri uygun sayfaya ekle veya yeni sayfa aç. Projeye özel bilgi proje klasörüne, genel bilgi kavram sayfasına gider. Transkript değil, damıtılmış bilgi yaz. Ardından proje sayfasının listesini, yeni kavram varsa kategori sayfasını ve ilgili log'u güncelle.
 
 **İşle / ingest** ("Inbox'u işle", "bu PDF'i ekle"):
-1. Kaynağı oku.
+1. Kaynağı oku. **Son adını belirle:** Vault'ta aynı adda başka bir dosya varsa (Glob ile tüm vault'ta bak, sadece `İşlendi/`'de değil) kaynağı Inbox'tayken `YYYY-MM-DD <ad>` diye yeniden adlandır (ör. `2026-09-25 slides.pdf`). Linkler adla çözüldüğü için aynı ad hem üzerine yazma hem link belirsizliği demektir. Bundan sonraki bütün linkleri bu son adla yaz.
 2. Özet sayfası oluştur: projeye aitse proje klasörüne, değilse `Kavramlar/`'a. Kavram sayfalarını oluştur ya da güncelle.
 3. Sayfaları birbirine ve kullanıcının mevcut notlarına wikilink ile bağla.
-4. Kaynağı `Inbox/İşlendi/`'ye taşı (onay gerekmez; silme değil). İlgili log'a `işlendi: [[<dosya>]]` satırı ekle. Inbox'un kökünde kalan her dosya bekleyen demektir; log taramaya gerek yok.
+4. Kaynağı `Inbox/İşlendi/`'ye taşı (onay gerekmez). Asla üzerine yazma: `mv -n` kullan ve taşımadan sonra dosyanın hedefte olduğunu kontrol et; hedefte aynı ad varsa dur ve 1. adımdaki gibi yeniden adlandır. Vault'ta `[[Inbox/<dosya>]]` (ya da `](Inbox/<dosya>)`) biçiminde eski linkler varsa `[[<dosya>]]` yap; yoksa taşıma onları kırar. İlgili log'a `işlendi: [[<dosya>]]` satırı ekle. Inbox'ta `İşlendi/` dışında kalan her dosya bekleyen demektir; log taramaya gerek yok.
 5. Kategori sayfalarını (yeni kavram varsa), index'i (yeni kategori ya da proje varsa) ve proje sayfasını güncelle.
 6. Kullanıcıya hangi sayfaların oluşturulduğunu veya değiştiğini listele.
 
@@ -111,12 +111,12 @@ Kısa özet (2-3 cümle).
 python3 "<skill klasörü>/scripts/check.py" "<vault yolu>"
 ```
 
-Python 3.8+ gerekir, ek paket gerekmez. macOS ve Linux'ta genelde yalnızca `python3` vardır; Windows'ta `python` ya da `py` kullan. Hangisi varsa onu çalıştır (`command -v python3 || command -v python`). Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan proje ve kategoriler, hiçbir kategori sayfasında listelenmeyen kavramlar, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
+Python 3.8+ gerekir, ek paket gerekmez. macOS ve Linux'ta genelde yalnızca `python3` vardır; Windows'ta `python` ya da `py` kullan. Hangisi varsa onu çalıştır (`command -v python3 || command -v python`). Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan proje ve kategoriler, hiçbir kategori sayfasında ya da birden fazla kategori sayfasında listelenen kavramlar, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
 
 ## Kurallar
 - Toplu taşıma ve yeniden adlandırma için shell (bash, PowerShell, python) kullanılabilir. Vault işletim sisteminin korumalı bir klasöründeyse (ör. Windows'ta "Denetimli klasör erişimi") shell yazmaları engellenebilir; o zaman kullanıcıya söyle.
 - **Silmeden önce kullanıcıya listeyi göster ve onay al.** Silme geri alınamaz; vault git'te değilse tek güvence bulut servisinin ya da işletim sisteminin geri dönüşüm kutusudur.
-- Inbox'u temizlemek için işlenmiş kaynakları silme; `Inbox/İşlendi/`'ye taşı.
+- Inbox'u temizlemek için işlenmiş kaynakları silme; `Inbox/İşlendi/`'ye taşı. Taşıma ve yeniden adlandırmada hiçbir zaman var olan bir dosyanın üzerine yazma; üzerine yazmak silmedir.
 - Kullanıcının kendi notlarını değiştirmeden önce sor. `Projeler/`, `Kavramlar/`, `Inbox/`, `index.md`, `log.md` ve `Vault Kullanımı.md` Claude'un alanıdır.
 - Log satırı: `- YYYY-MM-DD — işlem — etkilenen sayfalar`, en yeni üstte.
 - Vault bir bulut klasöründeyse (OneDrive, iCloud, Dropbox) okunamayan bir dosya yalnızca bulutta olabilir; kullanıcıya söyle.
