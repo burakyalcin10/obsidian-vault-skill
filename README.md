@@ -55,6 +55,16 @@ Bir projede farklı bir vault kullanmak için aynı satırı o projenin `CLAUDE.
 
 Vault boşsa ya da kökte `index.md` yoksa Claude yapıyı ilk kullanımda kurar.
 
+Bakım script'i için Python 3.8+ gerekir (ek paket yok).
+
+## Geliştirme
+
+`scripts/check.py` için testler:
+
+```bash
+python3 -m unittest discover tests
+```
+
 ## Önerilen
 
 Not sözdizimi, canvas ve Bases için [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) (`obsidian-markdown`, `json-canvas`, `obsidian-bases`). Zorunlu değil; skill bunlar olmadan da çalışır.

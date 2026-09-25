@@ -108,10 +108,10 @@ Kısa özet (2-3 cümle).
 **Bakım** ("vault'u kontrol et"): Bu skill'in klasöründeki script'i çalıştır. Notları tek tek okuma.
 
 ```bash
-python "<skill klasörü>/scripts/check.py" "<vault yolu>"
+python3 "<skill klasörü>/scripts/check.py" "<vault yolu>"
 ```
 
-Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan proje ve kategoriler, hiçbir kategori sayfasında listelenmeyen kavramlar, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
+Python 3.8+ gerekir, ek paket gerekmez. macOS ve Linux'ta genelde yalnızca `python3` vardır; Windows'ta `python` ya da `py` kullan. Hangisi varsa onu çalıştır (`command -v python3 || command -v python`). Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan proje ve kategoriler, hiçbir kategori sayfasında listelenmeyen kavramlar, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
 
 ## Kurallar
 - Toplu taşıma ve yeniden adlandırma için shell (bash, PowerShell, python) kullanılabilir. Vault işletim sisteminin korumalı bir klasöründeyse (ör. Windows'ta "Denetimli klasör erişimi") shell yazmaları engellenebilir; o zaman kullanıcıya söyle.

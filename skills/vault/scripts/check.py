@@ -7,18 +7,52 @@ Kullanım:
 
 Sadece okur, hiçbir dosyayı değiştirmez. Yalnızca standart kütüphane kullanır.
 """
+from __future__ import annotations  # `Path | None` Python 3.8-3.9'da da çalışsın
+
 import argparse
 import json
+import posixpath
 import re
 import sys
 import unicodedata
+import urllib.parse
 from collections import defaultdict
 from pathlib import Path
 
-LINK_RE = re.compile(r"(!?)\[\[([^\]]+?)\]\]")
-FENCE_RE = re.compile(r"```.*?```", re.S)
+WIKILINK_RE = re.compile(r"!?\[\[([^\]]+?)\]\]")
+# [metin](hedef), ![alt](resim.png), [metin](<boşluklu ad.md>), [metin](hedef "başlık")
+MDLINK_RE = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^)\s]+)(?:\s+\"[^\"\n]*\")?\s*\)")
+URL_SCHEME_RE = re.compile(r"^[a-z][a-z0-9+.-]*:", re.I)  # https:, mailto:, obsidian:
+FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+FENCE_CLOSE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})\s*$")
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---", re.S)
+
+
+def nfc(s: str) -> str:
+    """macOS dosya adlarını NFD (ayrışık) verir, notlar NFC yazılır; hepsini NFC'ye çevir."""
+    return unicodedata.normalize("NFC", s)
+
+
+def strip_code(text: str) -> str:
+    """Kod bloklarını (``` ve ~~~) ve satır içi kodu çıkar; içlerindeki linkler sayılmaz.
+
+    Blok, aynı karakterle ve en az açılış uzunluğunda bir çitle kapanır; böylece
+    ```` içindeki ``` bloğu dış bloğu kapatmaz.
+    """
+    out, fence = [], None
+    for line in text.split("\n"):
+        if fence:
+            m = FENCE_CLOSE_RE.match(line)
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence):
+                fence = None
+            out.append("")
+        elif m := FENCE_OPEN_RE.match(line):
+            fence = m.group(1)
+            out.append("")
+        else:
+            out.append(line)
+    return INLINE_CODE_RE.sub("", "\n".join(out))
 
 IGNORED_DIRS = {".obsidian", ".trash", ".git"}
 HUB_NOTES = {"index.md", "log.md"}  # kökteki giriş ve log; her şeye link verir
@@ -77,23 +111,28 @@ def is_orphan(note: Path, sources: set[Path]) -> bool:
 class Vault:
     def __init__(self, root: Path):
         self.root = root
-        self.files = sorted(
-            p.relative_to(root) for p in root.rglob("*")
-            if p.is_file() and not IGNORED_DIRS.intersection(p.relative_to(root).parts)
-        )
+        # Rapor ve eşleştirme NFC yollarla yapılır; diskten okumak için gerçek yol saklanır
+        self.real = {}
+        for p in root.rglob("*"):
+            rel = p.relative_to(root)
+            if p.is_file() and not IGNORED_DIRS.intersection(rel.parts):
+                self.real[Path(nfc(rel.as_posix()))] = p
+        self.files = sorted(self.real)
         self.notes = [f for f in self.files if f.suffix == ".md"]
 
         # Obsidian linkleri dosya adıyla ve büyük/küçük harf duyarsız çözer
         self.by_stem = defaultdict(list)   # "chunking" → [Kavramlar/Chunking.md]
         self.by_name = defaultdict(list)   # "er_diagram.png" → [ER_diagram.png]
+        self.by_path = {}                  # "kavramlar/chunking.md" → Kavramlar/Chunking.md
         for f in self.files:
             self.by_name[f.name.lower()].append(f)
+            self.by_path[f.as_posix().lower()] = f
             if f.suffix == ".md":
                 self.by_stem[f.stem.lower()].append(f)
 
         self.text = {n: self._read(n) for n in self.notes}
         # not → [(ham link, çözülen hedef ya da None)]; aynı sayfa başlık linkleri hariç
-        self.links = {n: self._extract_links(self.text[n]) for n in self.notes}
+        self.links = {n: self._extract_links(n, self.text[n]) for n in self.notes}
 
         self.incoming = defaultdict(set)
         for src, links in self.links.items():
@@ -102,28 +141,50 @@ class Vault:
                     self.incoming[target].add(src)
 
     def _read(self, rel: Path) -> str:
-        return (self.root / rel).read_text(encoding="utf-8", errors="replace")
+        # utf-8-sig: bazı Windows editörlerinin eklediği BOM'u atar (yoksa frontmatter eşleşmez)
+        return nfc(self.real[rel].read_text(encoding="utf-8-sig", errors="replace"))
 
-    def _extract_links(self, text: str):
-        body = INLINE_CODE_RE.sub("", FENCE_RE.sub("", text))
+    def _extract_links(self, src: Path, text: str):
+        """[(nottaki yazılışı, çözülen hedef ya da None)]; aynı sayfa başlık linkleri ve dış URL'ler hariç."""
+        body = strip_code(text)
         out = []
-        for m in LINK_RE.finditer(body):
-            raw = m.group(2)
+        for m in WIKILINK_RE.finditer(body):
+            raw = m.group(1)
             target = raw.replace("\\|", "|").split("|", 1)[0].split("#", 1)[0].strip()
             if target:
-                out.append((raw, self.resolve(target)))
+                out.append((m.group(0), self.resolve(target, src)))
+        for m in MDLINK_RE.finditer(body):
+            raw = m.group(1).strip("<>")
+            if URL_SCHEME_RE.match(raw):
+                continue
+            target = nfc(urllib.parse.unquote(raw)).split("#", 1)[0].strip()
+            if target:
+                out.append((m.group(0), self.resolve(target, src)))
         return out
 
-    def resolve(self, target: str):
-        t = target.replace("\\", "/").lower()
-        if "/" in t:
-            for f in self.files:
-                p = f.as_posix().lower()
-                if p in (t, t + ".md") or p.endswith("/" + t) or p.endswith("/" + t + ".md"):
-                    return f
-            return None
-        hits = self.by_stem.get(t) or self.by_name.get(t)
-        return hits[0] if hits else None
+    def resolve(self, target: str, src: Path | None = None):
+        t = target.replace("\\", "/")
+        if "/" not in t:
+            key = t.lower()
+            hits = self.by_stem.get(key) or self.by_name.get(key)
+            return hits[0] if hits else None
+
+        # Yol içeren link: önce notun klasörüne göre, sonra vault kökünden, en son sonek eşleşmesi
+        candidates = []
+        if src is not None:
+            candidates.append(posixpath.normpath(posixpath.join(src.parent.as_posix(), t)))
+        candidates.append(posixpath.normpath(t.lstrip("/")))
+        for c in candidates:
+            if c.startswith(".."):  # vault dışına çıkıyor
+                continue
+            hit = self.by_path.get(c.lower()) or self.by_path.get(c.lower() + ".md")
+            if hit:
+                return hit
+        suffix = "/" + t.lower().lstrip("./")
+        for p, f in self.by_path.items():
+            if p.endswith(suffix) or p.endswith(suffix + ".md"):
+                return f
+        return None
 
     def frontmatter(self, rel: Path) -> str:
         m = FRONTMATTER_RE.match(self.text.get(rel, ""))
@@ -140,7 +201,7 @@ class Vault:
 # ── Kontroller ───────────────────────────────────────────────────────────────
 
 def check_broken(v: Vault):
-    return [f"{src.as_posix()} → [[{raw}]]"
+    return [f"{src.as_posix()} → {raw}"
             for src, links in v.links.items() for raw, t in links if t is None]
 
 
@@ -198,14 +259,12 @@ def check_orphans(v: Vault):
 
 
 def check_inbox(v: Vault):
-    # İşlenen kaynak Inbox/İşlendi/'ye taşınır; geri kalan her şey bekliyor demektir.
-    # macOS dosya adlarını NFD verir; "İşlendi" karşılaştırması için NFC'ye çevir.
-    return [f.as_posix() for f in v.files if top_dir(f) == "Inbox"
-            and unicodedata.normalize("NFC", f.parts[1]) != "İşlendi"]
+    # İşlenen kaynak Inbox/İşlendi/'ye taşınır; geri kalan her şey (alt klasörler dahil) bekliyor.
+    return [f.as_posix() for f in v.files if top_dir(f) == "Inbox" and f.parts[1] != "İşlendi"]
 
 
 CHECKS = [
-    ("broken_links", "Kırık wikilink'ler", check_broken),
+    ("broken_links", "Kırık linkler", check_broken),
     ("duplicate_names", "Aynı adlı notlar (link belirsizliği)", check_duplicates),
     ("missing_from_index", "index'te olmayan proje ve kategoriler", check_index),
     ("uncategorized_concepts", "Hiçbir kategori sayfasında olmayan kavramlar", check_uncategorized),
