@@ -99,16 +99,13 @@ Kısa özet (2-3 cümle).
 4. Notlarda yoksa bunu açıkça söyle. Genel bilgiyle tamamlıyorsan bunu belirt.
 5. Faydalı bir sentez çıktıysa kaydetmeyi teklif et.
 
-**Bakım** ("vault'u kontrol et"): Şunları raporla:
-- kırık wikilink'ler
-- aynı adlı dosyalar (link belirsizliği)
-- index'te olmayan kavramlar ve projeler
-- proje sayfasında listelenmeyen proje dosyaları
-- `proje:` alanı taşıyan kavram sayfaları (kural ihlali)
-- hiçbir yerden link almayan sayfalar
-- Inbox'ta bekleyenler
+**Bakım** ("vault'u kontrol et"): Bu skill'in klasöründeki script'i çalıştır. Notları tek tek okuma.
 
-Düzeltmeden önce listeyi göster.
+```bash
+python "<skill klasörü>/scripts/check.py" "<vault yolu>"
+```
+
+Script sadece okur. Şunları raporlar: kırık wikilink'ler, aynı adlı notlar, index'te olmayan kavram ve projeler, proje sayfasında listelenmeyen dosyalar, `proje:` alanı taşıyan kavram sayfaları, yetim sayfalar, Inbox'ta bekleyenler. Raporu özetle ve her bulgu için bir düzeltme öner (ör. kırık link → notu oluştur ya da linki düzelt). Düzeltmeden önce onay al. Kullanıcının kendi notlarındaki bulguları yalnızca bildir.
 
 ## Kurallar
 - Toplu taşıma ve yeniden adlandırma için shell (bash, PowerShell, python) kullanılabilir. Vault işletim sisteminin korumalı bir klasöründeyse (ör. Windows'ta "Denetimli klasör erişimi") shell yazmaları engellenebilir; o zaman kullanıcıya söyle.
