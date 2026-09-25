@@ -4,6 +4,8 @@ Obsidian vault'unu **proje bazlı kişisel wiki** olarak yöneten bir [Claude Co
 
 Claude; kaynakları (PDF, link, metin) damıtılmış ve birbirine bağlı notlara çevirir, projelerini ayrı klasörlerde tutar, ortak kavramları tek sayfada toplar ve sorularını notlarına atıf vererek cevaplar.
 
+![Skill ile yönetilen bir vault'un Obsidian görünümü](img.png)
+
 ## Neler yapar
 
 | Söylediğin | Olan |
