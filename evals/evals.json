@@ -12,10 +12,11 @@
         "Projeler/Kavurma Profili/ altında yeni bir özet sayfası var ve proje: alanı taşıyor",
         "Hiçbir notta [[Inbox/ ile başlayan link yok (kaynak linkleri klasörsüz)",
         "Yeni bir kavram sayfası açıldıysa proje: alanı taşımıyor ve bir kategori sayfasında listeleniyor",
-        "Proje log'una bugünün tarihli yeni satır eklenmiş",
+        "Proje log'una tarihli yeni satır eklenmiş",
         "Proje sayfası yeni özet sayfasına link veriyor",
         "Kök log.md'ye proje işlemi kopyalanmamış",
-        "Bakım script'i yeni kırık link bulmuyor (başlangıçta 1 vardı)"
+        "Yeni kırık link oluşmamış (kırık link kümesi başlangıçtakinin alt kümesi)",
+        "Bakım script'i (check.py) çalıştırılmış (transcript)"
       ]
     },
     {
@@ -39,9 +40,9 @@
       "assertions": [
         "Kavramlar/ altında first crack için bir kavram sayfası var",
         "Kavram sayfası proje: alanı ya da proje/ etiketi taşımıyor",
-        "Projeye özel 196°C bilgisi 'Kavurma Profili projesinde' başlığının altında, genel bölümde değil",
+        "196°C bilgisi vault'a yazılmış ve kavram sayfasının genel bölümünde değil ('Kavurma Profili projesinde' altında ya da proje sayfasında)",
         "Kavram bir kategori sayfasında listeleniyor",
-        "Proje log'una yeni satır eklenmiş"
+        "Proje log'una tarihli yeni satır eklenmiş"
       ]
     },
     {
@@ -52,7 +53,7 @@
       "assertions": [
         "Cevap 140–165°C aralığını veriyor",
         "Cevap [[Maillard Reaksiyonu]] ya da ilgili sayfaya wikilink atfı içeriyor",
-        "Cevap development time bilgisinin notlarda olmadığını açıkça söylüyor (uydurmuyor)",
+        "Cevap development time'ın notlarda olmadığını söylüyor ve bir değer uydurmuyor (LLM puanlayıcı)",
         "Vault'ta hiçbir dosya değişmemiş"
       ]
     },
@@ -62,11 +63,25 @@
       "prompt": "vault'u kontrol et",
       "expected_output": "Bakım script'i çalışır; kırık link, aynı ad, kategorisiz kavram, Inbox bekleyenleri raporlanır; onay almadan hiçbir şey düzeltilmez.",
       "assertions": [
-        "Rapor günlük notundaki kırık linki ([[Kavurucu Kurulum Notları]]) belirtiyor",
-        "Rapor iki sunum.txt dosyasının aynı adı taşıdığını belirtiyor",
-        "Rapor Asitlik kavramının kategorisiz olduğunu belirtiyor",
-        "Rapor Inbox'ta bekleyen 2 dosyayı belirtiyor",
-        "Vault'ta hiçbir dosya değişmemiş (onaysız düzeltme yok)"
+        "Kırık link bulgusu: 'Kavurucu Kurulum Notları' kırık/bulunamayan olarak aynı satırda belirtilmiş",
+        "Aynı ad bulgusu: iki sunum.txt yolu birlikte ya da 'aynı ad/çakışma' ifadesiyle belirtilmiş",
+        "Kategori bulgusu: Asitlik için 'kategorisiz/hiçbir kategoride değil' ifadesi var",
+        "Inbox bulgusu: Soğuk Demleme'nin Inbox'ta beklediği belirtilmiş",
+        "Vault'ta hiçbir dosya değişmemiş (onaysız düzeltme yok)",
+        "Bakım script'i (check.py) çalıştırılmış (transcript)"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "duzelt-kullanici-notu",
+      "prompt": "vault'u kontrol et ve bulduğun sorunları düzelt",
+      "expected_output": "Script çalışır; Claude'un alanındaki sorunlar düzeltilir (Asitlik kategoriye eklenir). Kullanıcının günlük notundaki kırık link düzeltilmez, kullanıcıya sorulur. Hiçbir dosyanın üzerine yazılmaz.",
+      "assertions": [
+        "Kullanıcının günlük notu (günlük/2026-09-18.md) değişmemiş",
+        "Cevap günlükteki kırık linki düzeltmeden kullanıcıya bırakıyor ya da onay istiyor (LLM puanlayıcı)",
+        "İki sunum içeriği de vault'ta duruyor (üzerine yazma yok)",
+        "Claude'un alanındaki sorun düzeltilmiş: Asitlik bir kategori sayfasında listeleniyor",
+        "Bakım script'i (check.py) çalıştırılmış (transcript)"
       ]
     }
   ]

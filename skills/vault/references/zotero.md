@@ -1,6 +1,17 @@
 # Zotero'dan literatür notu
 
-Bu dosya yalnızca Zotero ile çalışırken okunur. Zotero MCP araçları gerekir: `zotero_search_items`, `zotero_item_metadata`, `zotero_item_fulltext` (ör. `zotero-mcp` paketi). Araçlar yoksa kullanıcıya söyle ve normal PDF işleme akışına dön.
+Bu dosya yalnızca Zotero ile çalışırken okunur. Bir Zotero MCP sunucusu gerekir. Araçlar yoksa kullanıcıya söyle ve normal PDF işleme akışına dön.
+
+**Araç adları sunucuya göre değişir.** Adına değil işlevine göre eşleştir:
+
+| İşlev | Örnek adlar |
+|---|---|
+| Arama (etiket filtresiyle) | `zotero_search_items` |
+| Metadata | `zotero_item_metadata`, `zotero_get_item_metadata` |
+| Tam metin | `zotero_item_fulltext`, `zotero_get_item_fulltext` |
+| Koleksiyon içeriği (varsa) | `zotero_get_collection_items` |
+
+Aşağıda kısa olsun diye ilk sütundaki adlar kullanılıyor.
 
 ## Kimlik: item key
 
@@ -8,14 +19,14 @@ Bir makalenin vault'taki kimliği Zotero **item key**'idir (ör. `TWC7S8K9`). No
 
 ## Proje ↔ Zotero etiketi
 
-Proje sayfasının frontmatter'ında `zotero-etiket: <etiket>` durur (ör. `dental-1002A`). Projenin makaleleri = Zotero'da bu etiketi taşıyan kayıtlar. Alan yoksa kullanıcıya hangi etiketi kullandığını sor ve proje sayfasına yaz. Etiketi olmayan bir makalenin hangi projeye ait olduğunu kullanıcıya sor.
+Proje sayfasının frontmatter'ında `zotero-etiket: <etiket>` durur (ör. `dental-1002A`). Projenin makaleleri = Zotero'da bu etiketi taşıyan kayıtlar. Sunucunun koleksiyon aracı varsa ve kullanıcı makalelerini etiketle değil koleksiyonla düzenliyorsa `zotero-koleksiyon: <ad>` da kullanılabilir. Alan yoksa kullanıcıya hangi etiketi kullandığını sor ve proje sayfasına yaz. Etiketi olmayan bir makalenin hangi projeye ait olduğunu kullanıcıya sor.
 
 ## Komutlar
 
 **Tek makale** ("bu makaleyi Zotero'dan işle", "Zotero'da X'i bul ve ekle"): `zotero_search_items` ile ara. Birden fazla sonuç varsa listele ve seçtir. Sonra aşağıdaki akışla işle.
 
 **Senkron** ("Zotero'yu senkronla", "projedeki yeni makaleleri işle"):
-1. `zotero_search_items(query="", tag="<zotero-etiket>", limit=100)` ile projenin bütün kayıtlarını al. Sonuç sayısı limite eşitse limiti artırıp tekrarla.
+1. `zotero_search_items(query="", tag="<zotero-etiket>", limit=100)` ile projenin kayıtlarını al. **Zotero API'si istek başına en fazla 100 kayıt döndürür** ve arama aracında sayfa (offset) parametresi yoksa limiti artırmak işe yaramaz. Dönen sayı 100 ya da verdiğin limite eşitse liste eksik olabilir: bunu kullanıcıya söyle ve aramayı böl (ör. `query` ile yıl ya da yazar aralıkları, `qmode="titleCreatorYear"`). Bölünmüş sonuçları item key'e göre birleştir. Eksik olabilecek bir listeyi "tamamı" diye raporlama.
 2. Vault'ta `zotero-key:` değerlerini Grep ile topla. Yalnızca notu olmayan anahtarları işle.
 3. İşlenecekleri başlık ve yıl ile listele. 5'ten fazlaysa işlemeden önce onay al (her makale tam metin okuması demek).
 
@@ -26,6 +37,7 @@ Proje sayfasının frontmatter'ında `zotero-etiket: <etiket>` durur (ör. `dent
    - frontmatter'a `içerik: özet` yaz (tam metin okunduysa `içerik: tam-metin`),
    - başlığın altına şu callout'u koy ve özette olmayan sayı, yöntem ya da sonuç yazma:
      `> [!note] Özete dayalı` / `> Tam metin Zotero'da yok; bu not yalnızca özete dayanıyor.`
+   - Tam metin aracı PDF'i bulup metni çıkaramadığını söylerse (ör. "text extraction is not possible", taranmış ya da görüntü tabanlı PDF) de aynı şekilde `içerik: özet` yaz. Callout'ta sebebi belirt (`> PDF taranmış görünüyor; metin çıkarılamadı.`) ve kullanıcıya PDF'e OCR uygulamasını öner (ör. OCRmyPDF, Adobe). Hata mesajını tam metin sanıp not yazma.
    - Kullanıcıya PDF'i Zotero'ya ekleyip notu tam metinle güncelletebileceğini söyle. Güncellerken `içerik: tam-metin` yap, callout'u kaldır ve özetten gelen sayıları tam metinle doğrula.
    - Birçok kayıt için PDF durumunu öğrenmek istenirse `zotero_item_fulltext`'i toplu çağırma: PDF olan her kayıt makalenin tamamını döndürür. Tek bir kayıtta dene; sonuç "No suitable attachment" ise kütüphanede ek olup olmadığını kullanıcıya sor.
 3. **Ad:** `<İlk yazarın soyadı> <yıl> - <kısa Türkçe başlık>.md`. Yıl Zotero'daki tarihten alınır. Ad vault'ta benzersiz olmalı.
